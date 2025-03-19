@@ -80,18 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { amount, utrNumber } = insertTransactionSchema.parse(req.body);
       const parsedAmount = parseFloat(amount);
 
-      // Create transaction record
+      // Only create transaction record, wait for admin approval
       const transaction = await storage.createTransaction(
         req.user.id,
         parsedAmount,
         utrNumber
       );
 
-      // Update user's wallet balance
-      const user = await storage.updateWalletBalance(
-        req.user.id,
-        parsedAmount
-      );
+      const user = req.user;
 
       // If this is user's first 100+ deposit and they were referred
       if (parsedAmount >= 100) {

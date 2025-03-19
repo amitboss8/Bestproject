@@ -377,7 +377,8 @@ export class MemStorage implements IStorage {
     this.transactions.set(transactionId, updatedTransaction);
 
     // Only update wallet balance if transaction is approved
-    if (status === "approved") {
+    // Only update balance when admin approves
+    if (status === "approved" && transaction.status !== "approved") {
       await this.updateWalletBalance(transaction.userId, parseFloat(transaction.amount));
     }
 
