@@ -73,6 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add balance
   app.post("/api/balance", async (req, res) => {
+    console.log('Balance update request:', req.body);
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     try {
