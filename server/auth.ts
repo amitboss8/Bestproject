@@ -33,13 +33,27 @@ async function validateWithGoogleSheets(username: string, password: string) {
   try {
     const response = await fetch("https://sheetdb.io/api/v1/9q67tdt9akctr");
     const data = await response.json();
-    
+
     return data.some((row: any) => 
       row.username === username && row.password === password
     );
   } catch (error) {
     console.error("Failed to validate with Google Sheets:", error);
     return false;
+  }
+}
+
+async function updateGoogleSheets(data: any) {
+  try {
+    await fetch("https://sheetdb.io/api/v1/sz1doh2zq3h05", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: [data] }),
+    });
+  } catch (error) {
+    console.error("Failed to update Google Sheets:", error);
   }
 }
 
@@ -71,10 +85,16 @@ export function setupAuth(app: Express) {
             username,
             password: await hashPassword(password),
           });
+
+          // Update Google Sheets with referral code
+          await updateGoogleSheets({
+            username: user.username,
+            referralCode: user.referCode,
+          });
         } else if (!(await comparePasswords(password, user.password))) {
           return done(null, false);
         }
-        
+
         return done(null, user);
       } catch (error) {
         return done(error);
@@ -89,15 +109,35 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    const existingUser = await storage.getUserByUsername(req.body.username);
+    const { username, password, referralCode } = req.body;
+
+    const existingUser = await storage.getUserByUsername(username);
     if (existingUser) {
       return res.status(400).send("Username already exists");
     }
 
     try {
+      // Validate referral code if provided
+      let referrer;
+      if (referralCode) {
+        referrer = await storage.getUserByReferCode(referralCode);
+        if (!referrer) {
+          return res.status(400).json({ message: "Invalid referral code" });
+        }
+      }
+
       const user = await storage.createUser({
-        ...req.body,
-        password: await hashPassword(req.body.password),
+        username,
+        password: await hashPassword(password),
+        referredBy: referrer?.referCode
+      });
+
+      // Update Google Sheets
+      await updateGoogleSheets({
+        username: user.username,
+        referralCode: user.referCode,
+        referredBy: referrer?.username || "",
+        referralDate: new Date().toISOString()
       });
 
       req.login(user, (err) => {

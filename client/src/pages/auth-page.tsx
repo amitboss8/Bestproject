@@ -22,7 +22,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Key, Lock } from "lucide-react";
+import { Shield, Key, Lock, Users } from "lucide-react";
+
+const loginUserSchema = insertUserSchema.pick({
+  username: true,
+  password: true
+});
+
+const registerUserSchema = insertUserSchema.extend({
+  referralCode: insertUserSchema.shape.referredBy.optional()
+});
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -35,7 +44,7 @@ export default function AuthPage() {
   }, [user, setLocation]);
 
   const loginForm = useForm({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(loginUserSchema),
     defaultValues: {
       username: "",
       password: "",
@@ -43,10 +52,11 @@ export default function AuthPage() {
   });
 
   const registerForm = useForm({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(registerUserSchema),
     defaultValues: {
       username: "",
       password: "",
+      referralCode: "",
     },
   });
 
@@ -70,6 +80,11 @@ export default function AuthPage() {
               icon={<Lock className="w-6 h-6" />}
               title="User Account Security"
               description="Advanced account protection measures"
+            />
+            <FeatureCard
+              icon={<Users className="w-6 h-6" />}
+              title="Refer & Earn"
+              description="Invite friends and earn rewards"
             />
           </div>
         </div>
@@ -137,7 +152,11 @@ export default function AuthPage() {
                 <Form {...registerForm}>
                   <form
                     onSubmit={registerForm.handleSubmit((data) =>
-                      registerMutation.mutate(data)
+                      registerMutation.mutate({
+                        username: data.username,
+                        password: data.password,
+                        referredBy: data.referralCode
+                      })
                     )}
                     className="space-y-4"
                   >
@@ -162,6 +181,19 @@ export default function AuthPage() {
                           <FormLabel>Password</FormLabel>
                           <FormControl>
                             <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={registerForm.control}
+                      name="referralCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Referral Code (Optional)</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Enter referral code" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

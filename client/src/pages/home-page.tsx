@@ -16,15 +16,21 @@ import {
   MessageSquareCode,
   HelpCircle,
   LogOut,
+  Users,
+  Copy,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
-  
+
   const { data: balance } = useQuery({
     queryKey: ["/api/balance"],
+  });
+
+  const { data: referralStats } = useQuery({
+    queryKey: ["/api/referral-stats"],
   });
 
   const handleNeedHelp = () => {
@@ -33,6 +39,16 @@ export default function HomePage() {
         title: "Account balance too low",
         description: "Please add ₹100 to your wallet to access support",
         variant: "destructive",
+      });
+    }
+  };
+
+  const copyReferralCode = () => {
+    if (user?.referCode) {
+      navigator.clipboard.writeText(user.referCode);
+      toast({
+        title: "Referral code copied",
+        description: "Share it with your friends to earn rewards!",
       });
     }
   };
@@ -62,6 +78,34 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">₹{balance?.balance || "0"}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-lg bg-white/10 border-none">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                My Referral Code
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <code className="bg-white/20 px-3 py-1 rounded">{user?.referCode}</code>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={copyReferralCode}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+              {referralStats && (
+                <div className="mt-4 space-y-2 text-sm">
+                  <p>Total Invites: {referralStats.totalInvites}</p>
+                  <p>Successful Referrals: {referralStats.successfulReferrals}</p>
+                  <p>Total Earned: ₹{referralStats.totalEarned}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

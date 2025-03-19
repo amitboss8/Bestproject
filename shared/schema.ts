@@ -7,7 +7,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   walletBalance: decimal("wallet_balance").notNull().default("0"),
-  referCode: text("refer_code").notNull()
+  referCode: text("refer_code").notNull(),
+  referredBy: text("referred_by"),
+  referralRewardClaimed: text("referral_reward_claimed").default("no")
 });
 
 export const transactions = pgTable("transactions", {
@@ -16,7 +18,8 @@ export const transactions = pgTable("transactions", {
   amount: decimal("amount").notNull(),
   utrNumber: text("utr_number").notNull(),
   status: text("status").notNull(), // "approved" | "rejected"
-  createdAt: timestamp("created_at").notNull().defaultNow()
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  type: text("type").default("deposit") // "deposit" | "referral_bonus"
 });
 
 export const otpServices = pgTable("otp_services", {
@@ -28,7 +31,10 @@ export const otpServices = pgTable("otp_services", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
-  password: true
+  password: true,
+  referredBy: true
+}).partial({
+  referredBy: true
 });
 
 export const insertTransactionSchema = createInsertSchema(transactions).pick({

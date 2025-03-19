@@ -4,6 +4,7 @@ import { setupAuth } from "./auth";
 import { storage } from "./storage";
 import { insertTransactionSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import fetch from "node-fetch";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -17,22 +18,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add balance
   app.post("/api/balance", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     try {
       const { amount, utrNumber } = insertTransactionSchema.parse(req.body);
-      
+      const parsedAmount = parseFloat(amount);
+
       // Create transaction record
       const transaction = await storage.createTransaction(
         req.user.id,
-        parseFloat(amount),
+        parsedAmount,
         utrNumber
       );
 
       // Update user's wallet balance
       const user = await storage.updateWalletBalance(
         req.user.id,
-        parseFloat(amount)
+        parsedAmount
       );
+
+      // If this is user's first 100+ deposit and they were referred
+      if (parsedAmount >= 100) {
+        await storage.processReferralReward(req.user.id);
+      }
 
       res.json({ transaction, user });
     } catch (error) {
@@ -47,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get transaction history
   app.get("/api/transactions", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     try {
       const transactions = await storage.getTransactions(req.user.id);
       res.json(transactions);
@@ -59,12 +66,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get OTP services
   app.get("/api/otp-services", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     try {
       const services = await storage.getOTPServices();
       res.json(services);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch OTP services" });
+    }
+  });
+
+  // Get referral stats
+  app.get("/api/referral-stats", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const stats = await storage.getReferralStats(req.user.id);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch referral stats" });
+    }
+  });
+
+  // Validate referral code
+  app.get("/api/validate-referral/:code", async (req, res) => {
+    try {
+      const user = await storage.getUserByReferCode(req.params.code);
+      if (user) {
+        res.json({ valid: true });
+      } else {
+        res.json({ valid: false });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to validate referral code" });
     }
   });
 

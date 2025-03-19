@@ -43,6 +43,7 @@ export default function Transactions() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date & Time</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>UTR Number</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
@@ -56,6 +57,19 @@ export default function Transactions() {
                           new Date(transaction.createdAt),
                           "MMM d, yyyy HH:mm"
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={
+                            transaction.type === "referral_bonus"
+                              ? "text-green-400"
+                              : ""
+                          }
+                        >
+                          {transaction.type === "referral_bonus"
+                            ? "Referral Bonus"
+                            : "Deposit"}
+                        </span>
                       </TableCell>
                       <TableCell>{transaction.utrNumber}</TableCell>
                       <TableCell>₹{transaction.amount}</TableCell>
