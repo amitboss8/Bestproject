@@ -56,14 +56,14 @@ export default function AddBalance() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/balance"] });
       toast({
-        title: "Transaction submitted",
-        description: "Your balance will be updated after verification",
+        title: "Payment request submitted",
+        description: "Your balance will be added once admin approves your payment",
       });
       form.reset();
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to add balance",
+        title: "Failed to submit payment request",
         description: error.message,
         variant: "destructive",
       });
