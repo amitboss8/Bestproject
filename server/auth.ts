@@ -43,7 +43,13 @@ async function validateWithGoogleSheets(username: string, password: string) {
   }
 }
 
-async function updateGoogleSheets(data: any) {
+async function updateReferralData(data: {
+  username: string;
+  referralCode: string;
+  referredBy?: string;
+  referralDate?: string;
+  referralBonus?: "YES" | "NO";
+}) {
   try {
     await fetch("https://sheetdb.io/api/v1/sz1doh2zq3h05", {
       method: "POST",
@@ -53,7 +59,23 @@ async function updateGoogleSheets(data: any) {
       body: JSON.stringify({ data: [data] }),
     });
   } catch (error) {
-    console.error("Failed to update Google Sheets:", error);
+    console.error("Failed to update referral data:", error);
+  }
+}
+
+async function updateReferralBonus(username: string) {
+  try {
+    await fetch("https://sheetdb.io/api/v1/sz1doh2zq3h05/username/" + username, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: { referralBonus: "YES" }
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to update referral bonus:", error);
   }
 }
 
@@ -87,7 +109,7 @@ export function setupAuth(app: Express) {
           });
 
           // Update Google Sheets with referral code
-          await updateGoogleSheets({
+          await updateReferralData({
             username: user.username,
             referralCode: user.referCode,
           });
@@ -132,12 +154,13 @@ export function setupAuth(app: Express) {
         referredBy: referrer?.referCode
       });
 
-      // Update Google Sheets
-      await updateGoogleSheets({
+      // Update Google Sheets with referral data
+      await updateReferralData({
         username: user.username,
         referralCode: user.referCode,
         referredBy: referrer?.username || "",
-        referralDate: new Date().toISOString()
+        referralDate: new Date().toISOString(),
+        referralBonus: "NO"
       });
 
       req.login(user, (err) => {

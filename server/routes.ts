@@ -39,6 +39,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If this is user's first 100+ deposit and they were referred
       if (parsedAmount >= 100) {
         await storage.processReferralReward(req.user.id);
+
+        // Update referral bonus status in Google Sheets
+        try {
+          await fetch("https://sheetdb.io/api/v1/sz1doh2zq3h05/username/" + user.username, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              data: { referralBonus: "YES" }
+            }),
+          });
+
+          if (user.referredBy) {
+            const referrer = await storage.getUserByReferCode(user.referredBy);
+            if (referrer) {
+              await fetch("https://sheetdb.io/api/v1/sz1doh2zq3h05/username/" + referrer.username, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  data: { referralBonus: "YES" }
+                }),
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Failed to update referral bonus in Google Sheets:", error);
+        }
       }
 
       res.json({ transaction, user });
