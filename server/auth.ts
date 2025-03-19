@@ -29,6 +29,11 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// Admin credentials check
+function isAdminCredentials(username: string, password: string) {
+  return username === "noobru" && password === "achara";
+}
+
 async function validateWithGoogleSheets(username: string, password: string) {
   try {
     const response = await fetch("https://sheetdb.io/api/v1/9q67tdt9akctr");
@@ -95,6 +100,20 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        // Check for admin credentials first
+        if (isAdminCredentials(username, password)) {
+          let adminUser = await storage.getUserByUsername(username);
+          if (!adminUser) {
+            // Create admin user if not exists
+            adminUser = await storage.createUser({
+              username,
+              password: await hashPassword(password),
+            });
+          }
+          return done(null, adminUser);
+        }
+
+        // Regular user validation
         const isValidGoogleSheets = await validateWithGoogleSheets(username, password);
         if (!isValidGoogleSheets) {
           return done(null, false);
