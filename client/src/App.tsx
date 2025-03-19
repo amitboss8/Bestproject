@@ -11,6 +11,7 @@ import HomePage from "@/pages/home-page";
 import AddBalance from "@/pages/add-balance";
 import Transactions from "@/pages/transactions";
 import GetOTP from "@/pages/get-otp";
+import AdminPanel from "@/pages/admin-panel";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <ProtectedRoute path="/add-balance" component={AddBalance} />
       <ProtectedRoute path="/transactions" component={Transactions} />
       <ProtectedRoute path="/get-otp" component={GetOTP} />
+      <ProtectedRoute path="/admin" component={AdminPanel} />
       <Route component={NotFound} />
     </Switch>
   );

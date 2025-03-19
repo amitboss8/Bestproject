@@ -17,6 +17,16 @@ export interface IStorage {
   getReferralStats(userId: number): Promise<{ totalInvites: number, successfulReferrals: number, totalEarned: number }>;
   processReferralReward(newUserId: number): Promise<void>;
   sessionStore: session.Store;
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    totalDeposits: string;
+    todayDeposits: string;
+  }>;
+  getPendingTransactions(): Promise<Transaction[]>;
+  updateTransactionStatus(
+    transactionId: number,
+    status: "approved" | "rejected"
+  ): Promise<Transaction>;
 }
 
 export class MemStorage implements IStorage {
@@ -308,6 +318,64 @@ export class MemStorage implements IStorage {
     services.forEach(service => {
       this.otpServices.set(service.id, service);
     });
+  }
+
+  async getAdminStats() {
+    const users = Array.from(this.users.values());
+    const transactions = Array.from(this.transactions.values());
+    const approvedTransactions = transactions.filter(t => t.status === "approved");
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayTransactions = approvedTransactions.filter(t => {
+      const txDate = new Date(t.createdAt);
+      return txDate >= today;
+    });
+
+    const totalDeposits = approvedTransactions.reduce(
+      (sum, t) => sum + parseFloat(t.amount),
+      0
+    );
+
+    const todayDeposits = todayTransactions.reduce(
+      (sum, t) => sum + parseFloat(t.amount),
+      0
+    );
+
+    return {
+      totalUsers: users.length,
+      totalDeposits: totalDeposits.toString(),
+      todayDeposits: todayDeposits.toString()
+    };
+  }
+
+  async getPendingTransactions(): Promise<Transaction[]> {
+    const pendingTransactions = Array.from(this.transactions.values())
+      .filter(t => t.status === "pending")
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // Add username to each transaction
+    const enrichedTransactions = await Promise.all(
+      pendingTransactions.map(async t => {
+        const user = await this.getUser(t.userId);
+        return { ...t, username: user?.username };
+      })
+    );
+
+    return enrichedTransactions;
+  }
+
+  async updateTransactionStatus(
+    transactionId: number,
+    status: "approved" | "rejected"
+  ): Promise<Transaction> {
+    const transaction = this.transactions.get(transactionId);
+    if (!transaction) throw new Error("Transaction not found");
+
+    const updatedTransaction = { ...transaction, status };
+    this.transactions.set(transactionId, updatedTransaction);
+    return updatedTransaction;
   }
 }
 

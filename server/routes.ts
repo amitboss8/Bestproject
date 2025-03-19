@@ -9,6 +9,62 @@ import fetch from "node-fetch";
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
+  // Admin routes
+  app.get("/api/admin/stats", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.username !== "noobru") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  app.get("/api/admin/pending-transactions", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.username !== "noobru") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const transactions = await storage.getPendingTransactions();
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending transactions" });
+    }
+  });
+
+  app.post("/api/admin/update-transaction/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user.username !== "noobru") {
+      return res.sendStatus(401);
+    }
+
+    try {
+      const { status } = req.body;
+      const transaction = await storage.updateTransactionStatus(
+        parseInt(req.params.id),
+        status
+      );
+
+      // Update user's wallet balance if approved
+      if (status === "approved") {
+        const amount = parseFloat(transaction.amount);
+        const user = await storage.updateWalletBalance(transaction.userId, amount);
+
+        // Process referral reward if this is a 100+ deposit
+        if (amount >= 100) {
+          await storage.processReferralReward(transaction.userId);
+        }
+      }
+
+      res.json({ message: "Transaction updated successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update transaction" });
+    }
+  });
+
   // Get user balance
   app.get("/api/balance", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
