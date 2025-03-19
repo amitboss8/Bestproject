@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Transaction } from "@shared/schema";
+import { Transaction, AdminStats } from "@shared/schema";
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 export default function AdminPanel() {
   const { toast } = useToast();
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
   });
 

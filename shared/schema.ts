@@ -17,7 +17,7 @@ export const transactions = pgTable("transactions", {
   userId: serial("user_id").references(() => users.id),
   amount: decimal("amount").notNull(),
   utrNumber: text("utr_number").notNull(),
-  status: text("status").notNull(), // "approved" | "rejected"
+  status: text("status").notNull(), // "approved" | "rejected" | "pending"
   createdAt: timestamp("created_at").notNull().defaultNow(),
   type: text("type").default("deposit") // "deposit" | "referral_bonus"
 });
@@ -44,5 +44,12 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type Transaction = typeof transactions.$inferSelect;
+export type Transaction = typeof transactions.$inferSelect & { username?: string };
 export type OTPService = typeof otpServices.$inferSelect;
+
+// Admin stats type
+export type AdminStats = {
+  totalUsers: number;
+  totalDeposits: string;
+  todayDeposits: string;
+};
