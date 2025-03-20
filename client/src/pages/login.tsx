@@ -1,2 +1,5 @@
-<!-- Since no original code was provided, this is a placeholder demonstrating the change.  A real-world application would require the original code to be provided for accurate modification. -->
+export const metadata = {
+  title: "indianotp.in - Login",
+  description: "Login to access OTP services",
+};
 <h1>indianotp.in</h1>
