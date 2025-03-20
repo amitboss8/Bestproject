@@ -255,7 +255,7 @@ export class MemStorage implements IStorage {
       { id: 82, name: "OneDrive", price: "3.00", icon: "SiMicrosoftonedrive" },
       { id: 83, name: "Notion", price: "3.00", icon: "SiNotion" },
       { id: 84, name: "Trello", price: "5.00", icon: "SiTrello" },
-      { id: 85, name: "Asana", price: "4.00", icon: "SiAsana" }
+      { id: 85, name: "Asana", price: "4.00", icon: "SiAsana" },
       { id: 4, name: "My11Circle", price: "3.64", icon: "SiCircle" },
       { id: 5, name: "Gamezy", price: "3.07", icon: "SiGamejolt" },
       { id: 6, name: "PlayerzPot", price: "1.22", icon: "SiPlaystation" },
