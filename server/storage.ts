@@ -218,7 +218,7 @@ export class MemStorage implements IStorage {
       { id: 42, name: "MegaPay", price: "2.84", icon: "SiMega" },
       { id: 43, name: "UltraShield", price: "3.52", icon: "SiUbisoft" },
       { id: 44, name: "SafeOTP", price: "2.08", icon: "SiSafari" },
-      { id: 45, name: "QuickVerify", price: "3.84", icon: "SiQuicktime" }
+      { id: 45, name: "QuickVerify", price: "3.84", icon: "SiQuicktime" },
       { id: 21, name: "Google Pay", price: "4.10", icon: "SiGooglepay" },
       { id: 22, name: "PhonePe", price: "2.90", icon: "SiPhonepe" },
       { id: 23, name: "Paytm", price: "3.45", icon: "SiPaytm" },
