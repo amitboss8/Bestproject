@@ -100,7 +100,7 @@ export default function AddBalance() {
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
               <img
-                src="/attached_assets/IMG-20250317-WA0001.jpg"
+                src="/IMG-20250317-WA0001.jpg"
                 alt="Payment QR Code"
                 className="w-64 h-64"
               />
