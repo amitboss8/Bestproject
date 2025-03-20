@@ -100,7 +100,7 @@ export default function AddBalance() {
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
               <img
-                src="https://chart.googleapis.com/chart?cht=qr&chl=upi://pay?pa=Amitachara@fam&pn=OTP%20Service&amt=100&cu=INR&chs=300x300"
+                src="/attached_assets/IMG-20250317-WA0001.jpg"
                 alt="Payment QR Code"
                 className="w-64 h-64"
               />
