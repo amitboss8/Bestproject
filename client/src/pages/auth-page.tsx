@@ -64,7 +64,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8">
         <div className="text-white space-y-6">
-          <h1 className="text-4xl font-bold">Secure OTP Service</h1>
+          <h1 className="text-4xl font-bold">indianotp.in</h1>
           <div className="space-y-4">
             <FeatureCard
               icon={<Shield className="w-6 h-6" />}
